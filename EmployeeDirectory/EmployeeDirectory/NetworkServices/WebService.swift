@@ -35,18 +35,24 @@ class WebService {
             }
             guard (200...299).contains(response.statusCode) else {
                 completion(.failure(.urlResponseError(code: response.statusCode, msg: "Response Status is not 200")))
-                    return
+                return
             }
             debugPrint("\n\n Response: \t\t  \(String(bytes: dataRes, encoding: String.Encoding.utf8) ?? "Content-") \n\n")
-            let result = try? JSONDecoder().decode(T.self, from: dataRes)
+            let decoder = JSONDecoder()
+            // Assign the NSManagedIbject Context to the decoder
+            decoder.userInfo[CodingUserInfoKey.context!] =  PersistentManager.shared.persistentContainer.viewContext
+            
+            let result = try? decoder.decode(T.self, from: dataRes)
             if let result = result {
                 DispatchQueue.main.async {
+                    // Move back on the main thread, as we call tableview.reload
+                    PersistentManager.shared.saveContext()
                     completion(.success(result))
                 }
             }else{
                 
                 completion(.failure(.decodingError))
             }
-            }.resume()
+        }.resume()
     }
 }

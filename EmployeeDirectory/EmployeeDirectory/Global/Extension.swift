@@ -63,3 +63,6 @@ extension UIImageView {
         self.clipsToBounds = true
     }
 }
+extension CodingUserInfoKey {
+    static let context = CodingUserInfoKey(rawValue: "context")
+}
